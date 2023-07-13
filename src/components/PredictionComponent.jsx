@@ -51,7 +51,7 @@ const PredictionComponent = ({ data }) => {
           const decodedData = model.predict(encodedData);
 
           const decodedValues = decodedData.arraySync().flat();
-          const prediction = decodedValues[0];
+          const prediction = decodedValues[0].toFixed(2);
 
           predictions.push(prediction);
           inputData = prediction;
@@ -79,7 +79,7 @@ const PredictionComponent = ({ data }) => {
     if (data.length > 10) {
       trainModel();
     }
-  }, [data]);
+  });
 
   // Calculate accuracy percentage
   const calculateAccuracy = (predictions, originalData) => {
@@ -95,16 +95,12 @@ const PredictionComponent = ({ data }) => {
     // Whenever the data prop changes, trigger the training and prediction process
     setPredictions([]); // Reset predictions
     setAccuracy(0); // Reset accuracy
-  }, [data]);
+  }, []);
 
   return (
-    <div>
-      <h3>Predictions:</h3>
-      <ul>
-        {predictions.map((prediction, index) => (
-          <li key={index}>{prediction}</li>
-        ))}
-      </ul>
+    <div className="">
+      <h3>Predictions: {predictions}</h3>
+
       <p>Accuracy: {accuracy}%</p>
     </div>
   );

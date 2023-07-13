@@ -12,7 +12,7 @@ import {
 } from "recharts";
 import PredictionComponent from "./PredictionComponent";
 
-const Button = () => {
+const MainComponent = () => {
   const app_id = 36942; // Replace with your app_id or leave the current one for testing.
   const connection = new WebSocket(
     `wss://ws.binaryws.com/websockets/v3?app_id=${app_id}`
@@ -35,7 +35,7 @@ const Button = () => {
     basis: "payout",
     contract_type: "CALL",
     currency: "USD",
-    duration: 5,
+    duration: 10,
     duration_unit: "t",
     symbol: "R_100",
     barrier: "+0.5",
@@ -143,25 +143,29 @@ const Button = () => {
   console.log(volatility100DataCollected);
 
   return (
-    <div>
-      <button onClick={getAccountDetails}>Start the websocket</button>
-      <button onClick={stopWebSocket}>Stop Web Socket</button>
-      <button onClick={restartWebSocket}>Restart Web Socket</button>
+    <div className="flex flex-row w-full">
       <div>
-        <h2>{currentValue}</h2>
+        <button onClick={getAccountDetails}>Start the websocket</button>
+        <button onClick={stopWebSocket}>Stop Web Socket</button>
+        <button onClick={restartWebSocket}>Restart Web Socket</button>
+        <div>
+          <h2>{currentValue}</h2>
+        </div>
+        {/* <h3>Collected: {volatility100DataCollected}</h3> */}
+        <BarChart width={500} height={600} data={recievedData}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="category" />
+          <YAxis />
+          <Tooltip />
+          <Legend />
+          <Bar dataKey="count" fill="#8884d8" />
+        </BarChart>
       </div>
-      {/* <h3>Collected: {volatility100DataCollected}</h3> */}
-      <BarChart width={500} height={600} data={recievedData}>
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="category" />
-        <YAxis />
-        <Tooltip />
-        <Legend />
-        <Bar dataKey="count" fill="#8884d8" />
-      </BarChart>
-      <PredictionComponent data={volatility100DataCollected} />
+      <div className="w-full items-center">
+        <PredictionComponent data={volatility100DataCollected} />
+      </div>
     </div>
   );
 };
 
-export default Button;
+export default MainComponent;
