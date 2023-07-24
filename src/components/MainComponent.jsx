@@ -20,12 +20,6 @@ const MainComponent = () => {
     `wss://ws.binaryws.com/websockets/v3?app_id=${app_id}`
   );
   const api = new DerivAPIBasic({ connection });
-
-  const initialStake = 1;
-  const [stake, setStake] = useState(initialStake);
-  const [profit, setProfit] = useState(0);
-  const [balance, setBalance] = useState(null);
-  const [startTrading, setStartTrading] = useState(false);
   const [volatility100DataCollected, setVolatility100DataCollected] = useState(
     []
   );
@@ -34,10 +28,6 @@ const MainComponent = () => {
     { category: "Even", count: 0 },
     { category: "Odd", count: 0 },
   ]);
-
-  // Use useRef to store the latest stake and profit values
-  const latestStake = useRef(stake);
-  const latestProfit = useRef(profit);
 
   const proposal_request = {
     proposal: 1,
@@ -70,7 +60,7 @@ const MainComponent = () => {
         lastDigit = Number.isInteger(sampleNumber)
           ? sampleNumber % 10
           : sampleNumber.toString().slice(-1);
-      console.log("The last digit of ", sampleNumber, " is ", lastDigit);
+      // console.log("The last digit of ", sampleNumber, " is ", lastDigit);
 
       // Update the data array based on incoming data
       function processNumber(number) {
@@ -86,9 +76,9 @@ const MainComponent = () => {
         });
       }
 
-      console.log(typeof volatility100DataCollected);
+      // console.log(typeof volatility100DataCollected);
       processNumber(lastDigit);
-      console.log(recievedData);
+      // console.log(recievedData);
 
       if (volatility100DataCollected.length === 1000) {
         connection.close();
@@ -109,7 +99,7 @@ const MainComponent = () => {
     // Handle the pong message from the server
     connection.onmessage = function (event) {
       const message = JSON.parse(event.data);
-      console.log(message.data);
+      // console.log(message.data);
     };
 
     // Clear the keep-alive interval and close the connection on disconnect
@@ -159,9 +149,9 @@ const MainComponent = () => {
   };
 
   return (
-    <div className="flex flex-row w-full">
-      <div className="flex flex-col w-full">
-        <div>
+    <div className="flex w-full">
+      <div>
+        <div className="flex-col w-full ">
           <button className="ml-4 mb-4" onClick={startTheWebsocket}>
             Get Live Data
           </button>
@@ -170,27 +160,25 @@ const MainComponent = () => {
           </button>
         </div>
 
-        <BuySellComponent />
-        <div>
-          <h2>{currentValue}</h2>
-        </div>
-        <div className="w-8/12  p-4 bg-white shadow-md rounded-md mt-40">
-          <ResponsiveContainer width="100%" height={450}>
-            <BarChart data={recievedData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="category" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="count" fill="#6366F1" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+        <BuySellComponent className="" />
       </div>
 
-      {/* <div className="w-full items-center">
-        <PredictionComponent data={volatility100DataCollected} />
-      </div> */}
+      <div className="w-3/6  p-4 bg-white shadow-md rounded-md mt-2">
+        <ResponsiveContainer width="100%" height={400}>
+          <BarChart data={recievedData}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="category" />
+            <YAxis />
+            <Tooltip />
+            <Legend />
+            <Bar dataKey="count" fill="#6366F1" />
+          </BarChart>
+        </ResponsiveContainer>
+        <div className="text-black text-center mt-2">
+          <h2>Current Value: {currentValue}</h2>
+        </div>
+      </div>
+      <PredictionComponent />
     </div>
   );
 };

@@ -18,7 +18,14 @@ export default function BuySellComponent() {
   const latestStake = useRef(stake);
   const latestProfit = useRef(profit);
 
-  useEffect(() => {});
+  useEffect(() => {
+    async function getAccDetails() {
+      const accDetails = await api.authorize("pTG32T60qDgtLEk");
+      setBalance(accDetails.authorize.balance);
+    }
+
+    getAccDetails();
+  });
 
   const makeAPurchase = async () => {
     try {
@@ -40,8 +47,6 @@ export default function BuySellComponent() {
         buy: proposalRequestResponse.proposal.id,
       });
 
-      console.log("Buy Amount from proposal: ", buyResponse.buy.buy_price);
-
       const simulateTrading = async () => {
         await new Promise((resolve) => setTimeout(resolve, 2000));
 
@@ -56,16 +61,6 @@ export default function BuySellComponent() {
           profitTableRes.profit_table.transactions[0].sell_price -
           buyResponse.buy.buy_price;
 
-        console.log("Profit Table response: ", profitTableRes);
-        console.log(
-          "Buy Price: ",
-          profitTableRes.profit_table.transactions[0].buy_price
-        );
-        console.log(
-          "Sell Price: ",
-          profitTableRes.profit_table.transactions[0].sell_price
-        );
-
         const newStake = profitMade <= 0 ? stake * 2 : initialStake;
 
         // Update the latest stake and profit values with the new values
@@ -75,10 +70,9 @@ export default function BuySellComponent() {
         // Update the state with the new stake and profit
         setStake(latestStake.current);
         setProfit(latestProfit.current);
-        console.log(`Profit made: ${profitMade}`);
       };
 
-      await new Promise((resolve) => setTimeout(resolve, 3000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       await simulateTrading();
     } catch (error) {
@@ -90,24 +84,6 @@ export default function BuySellComponent() {
     setInterval(() => {
       makeAPurchase();
     }, 5000);
-  };
-  const profitTableFunction = async () => {
-    try {
-      await api.authorize(token);
-      const profitTableRes = await api.profitTable({
-        profit_table: 1,
-        description: 1,
-        contract_type: ["DIGITEVEN"],
-        limit: 1,
-      });
-
-      console.log(
-        "Response from profitTabble Function: ",
-        profitTableRes.profit_table.transactions[0]
-      );
-    } catch (error) {
-      console.log(`Error: ${error}`);
-    }
   };
 
   const balanceResponse = (res) => {
@@ -151,11 +127,15 @@ export default function BuySellComponent() {
         </button>
 
         <div className="mt-4">
-          <p className="text-xl font-bold text-indigo-600">Stake: {stake}</p>
-          <p className="text-xl font-bold text-green-600">Profit: {profit}</p>
+          <p className="text-xl ml-4  font-bold text-indigo-600">
+            Stake: {stake}
+          </p>
+          <p className="text-xl ml-4  font-bold text-green-600">
+            Profit: {profit}
+          </p>
         </div>
 
-        {balance && <h2>Balance: {balance}</h2>}
+        <h2>Balance: {balance}</h2>
       </div>
     </div>
   );

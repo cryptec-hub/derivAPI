@@ -1,12 +1,10 @@
 import * as tf from "@tensorflow/tfjs";
 
 export const trainModel = async (data) => {
-  // Convert data to numeric values
-  const numericData = data.map((value) => parseFloat(value));
-
   // Define the architecture of the autoencoder
   const inputDim = 1; // Dimensionality of the input data
   const encodingDim = 128; // Dimensionality of the encoded representation
+  const windowSize = 20; // Size of the moving average window
 
   const model = tf.sequential();
 
@@ -34,22 +32,63 @@ export const trainModel = async (data) => {
 
   // Train the autoencoder
   const trainAutoencoder = async (data, epochs) => {
-    const tensorData = tf.tensor2d(numericData, [numericData.length, inputDim]);
+    const tensorData = tf.tensor2d(data, [data.length, inputDim]);
     await model.fit(tensorData, tensorData, { epochs });
   };
 
-  // Generate predictions for the next five values
-  const predictNextValues = (inputData) => {
+  // Generate predictions for the next 10 values
+  const predictNextValues = (inputData, numPredictions) => {
     let predictions = [];
 
-    for (let i = 0; i < 5; i++) {
-      const tensorInputData = tf.tensor2d([[inputData]], [1, inputDim]);
+    // Apply moving average to the input data
+    const applyMovingAverage = (data) => {
+      const smoothedData = [];
+      const dataLength = data.length;
+      const weights = [0.1, 0.2, 0.3, 0.2, 0.1]; // Custom weights for the moving average
+
+      for (let i = 0; i < dataLength; i++) {
+        let sum = 0;
+        let weightIndex = 0;
+
+        for (let j = i - windowSize + 1; j <= i; j++) {
+          if (j >= 0 && j < dataLength) {
+            sum += data[j] * weights[weightIndex];
+            weightIndex++;
+          }
+        }
+
+        smoothedData.push(sum);
+      }
+
+      return smoothedData;
+    };
+
+    // Convert inputData and smoothedInputData to tensors with shape [inputData.length, 1]
+    let tensorInputData = tf.tensor2d(inputData, [inputData.length, 1]);
+    let tensorSmoothedData = tf.tensor2d(applyMovingAverage(inputData), [
+      inputData.length,
+      1,
+    ]);
+
+    for (let i = 0; i < numPredictions; i++) {
       const encodedData = model.predict(tensorInputData);
       const decodedData = model.predict(encodedData);
 
-      const decodedValue = decodedData.arraySync()[0][0].toFixed(2);
-      predictions.push(decodedValue);
-      inputData = parseFloat(decodedValue);
+      // Get the decoded values from the tensor
+      const decodedValues = decodedData.arraySync().flat();
+      const prediction = decodedValues[0].toFixed(2);
+
+      predictions.push(prediction);
+
+      // Update inputData and smoothedInputData with the new prediction
+      inputData = inputData.concat(Number(prediction)).slice(-windowSize);
+      tensorInputData = tf.tensor2d(inputData, [inputData.length, 1]);
+
+      const newSmoothedValue = Number(prediction);
+      tensorSmoothedData = tf.concat([
+        tensorSmoothedData.slice(1),
+        tf.tensor2d([[newSmoothedValue]], [1, 1]),
+      ]);
     }
 
     return predictions;
@@ -58,21 +97,10 @@ export const trainModel = async (data) => {
   // Example usage
   const epochs = 200; // Number of training epochs
 
-  await trainAutoencoder(numericData, epochs);
+  await trainAutoencoder(data, epochs);
 
-  const inputForPredictions = numericData[numericData.length - 1]; // Use last value of input data for predictions
-  const predictions = predictNextValues(inputForPredictions);
-  const prediction = parseFloat(predictions[predictions.length - 1]);
+  const inputForPredictions = data.slice(-windowSize); // Use the last 20 values of input data for predictions
+  const predictions = predictNextValues(inputForPredictions, 25);
 
-  const predictionInt = Number.isInteger(prediction)
-    ? prediction % 10
-    : parseInt(prediction.toString().slice(-1));
-
-  if (predictionInt % 2 === 0) {
-    console.log(`Value received from ML Model: DIGITEVEN`);
-    return "DIGITEVEN";
-  } else {
-    console.log(`Value received from ML Model: DIGITODD`);
-    return "DIGITODD";
-  }
+  return predictions;
 };
