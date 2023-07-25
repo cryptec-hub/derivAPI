@@ -16,15 +16,14 @@ export const trainModel = async (data) => {
       inputShape: [inputDim],
     })
   );
+  model.add(tf.layers.dense({ units: 32, activation: "relu" }));
+  model.add(tf.layers.dense({ units: 16, activation: "relu" }));
   model.add(tf.layers.dense({ units: encodingDim, activation: "relu" }));
 
   // Decoder layers
-  model.add(
-    tf.layers.dense({
-      units: 64,
-      activation: "relu",
-    })
-  );
+  model.add(tf.layers.dense({ units: 16, activation: "relu" }));
+  model.add(tf.layers.dense({ units: 32, activation: "relu" }));
+  model.add(tf.layers.dense({ units: 64, activation: "relu" }));
   model.add(tf.layers.dense({ units: inputDim, activation: "linear" }));
 
   // Compile the model
@@ -100,7 +99,7 @@ export const trainModel = async (data) => {
   await trainAutoencoder(data, epochs);
 
   const inputForPredictions = data.slice(-windowSize); // Use the last 20 values of input data for predictions
-  const predictions = predictNextValues(inputForPredictions, 25);
+  const predictions = predictNextValues(inputForPredictions, 50);
 
   return predictions;
 };

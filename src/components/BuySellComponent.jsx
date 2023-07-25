@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import DerivAPIBasic from "@deriv/deriv-api/dist/DerivAPIBasic";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function BuySellComponent() {
   const app_id = 36942;
@@ -48,7 +50,7 @@ export default function BuySellComponent() {
       });
 
       const simulateTrading = async () => {
-        await new Promise((resolve) => setTimeout(resolve, 2000));
+        await new Promise((resolve) => setTimeout(resolve, 1000));
 
         const profitTableRes = await api.profitTable({
           profit_table: 1,
@@ -57,10 +59,36 @@ export default function BuySellComponent() {
           limit: 1,
         });
 
-        const profitMade =
+        const roundedProfitMade =
           profitTableRes.profit_table.transactions[0].sell_price -
           buyResponse.buy.buy_price;
 
+        const profitMade = parseFloat(roundedProfitMade.toFixed(2));
+
+        if (profitMade > 0) {
+          // Show toast message with doubled stake
+          toast.success(`Profit Made ${profitMade}`, {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "colored",
+          });
+        } else {
+          toast.error(`Loss Made ${profitMade}`, {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "colored",
+          });
+        }
         const newStake = profitMade <= 0 ? stake * 2 : initialStake;
 
         // Update the latest stake and profit values with the new values
@@ -94,19 +122,12 @@ export default function BuySellComponent() {
   async function setBalanceFunction() {
     await api.authorize(token);
     connection.addEventListener("message", balanceResponse);
-    const balanceRes = await api.balance({
-      balance: 1,
-      subscribe: 1,
-    });
-
-    const bal = balanceRes.balance.balance;
-
-    setStartTrading(true);
   }
 
   return (
-    <div className="flex flex-col w-full">
-      <div>
+    <div className="w-2/6">
+      <div className="flex flex-col">
+        <h2 className="text-right mb-4">Balance: {balance}</h2>
         <button
           onClick={makeAPurchase}
           className="mb-4 ml-4 bg-lime-300 text-emerald-950"
@@ -134,9 +155,19 @@ export default function BuySellComponent() {
             Profit: {profit}
           </p>
         </div>
-
-        <h2>Balance: {balance}</h2>
       </div>
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
     </div>
   );
 }
