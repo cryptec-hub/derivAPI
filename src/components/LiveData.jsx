@@ -158,10 +158,10 @@ function LiveData() {
         </ResponsiveContainer>
       </div>
       <div className="flex justify-end">
-        <button className="mt-3 w-40 ml-10 p-4" onClick={startTheWebsocket}>
+        <button className="mt-3 ml-10 p-4" onClick={startTheWebsocket}>
           Get Live Data
         </button>
-        <button className="mt-3 w-40 ml-10 p-4" onClick={resetData}>
+        <button className="mt-3 ml-10 p-4" onClick={resetData}>
           Reset
         </button>
         <h1 className="w-20 mt-3 ml-10 bg-white shadow-md rounded-md text-blue-600 p-4">

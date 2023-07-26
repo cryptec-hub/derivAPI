@@ -2,19 +2,29 @@ import React, { useEffect, useRef, useState } from "react";
 import DerivAPIBasic from "@deriv/deriv-api/dist/DerivAPIBasic";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Select from "react-select";
+import { tradeType } from "./functions/data";
 
-export default function BuySellComponent() {
+function BuySellComponent({ authorizationToken }) {
   const app_id = 36942;
   const connection = new WebSocket(
     `wss://ws.binaryws.com/websockets/v3?app_id=${app_id}`
   );
   const api = new DerivAPIBasic({ connection });
-  const initialStake = 1;
+  const initialStake = 0.35;
   const [stake, setStake] = useState(initialStake);
   const [profit, setProfit] = useState(0);
   const [balance, setBalance] = useState(null);
-  const [startTrading, setStartTrading] = useState(false);
-  const token = "pTG32T60qDgtLEk";
+  const [loginId, setLoginId] = useState("Please wait...");
+  const [selectedTradeType, setSelectedTradeType] = useState({
+    value: "DIGITEVEN",
+    label: "DIGITEVEN",
+  });
+  const token = authorizationToken;
+
+  const handleTradeTypeChange = (selected) => {
+    setSelectedTradeType(selected);
+  };
 
   // Use useRef to store the latest stake and profit values
   const latestStake = useRef(stake);
@@ -22,12 +32,39 @@ export default function BuySellComponent() {
 
   useEffect(() => {
     async function getAccDetails() {
-      const accDetails = await api.authorize("pTG32T60qDgtLEk");
-      setBalance(accDetails.authorize.balance);
+      try {
+        const id = "toast";
+        const accDetails = await api.authorize(token);
+        setBalance(accDetails.authorize.balance);
+        setLoginId(accDetails.authorize.loginid);
+        toast.success(`Logged in Successfully😊`, {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+          toastId: id,
+        });
+      } catch (error) {
+        toast.error(`${error.error.message}`, {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+          toastId: `${error.error.message}`,
+        });
+      }
     }
 
     getAccDetails();
-  });
+  }, []);
 
   const makeAPurchase = async () => {
     try {
@@ -37,7 +74,7 @@ export default function BuySellComponent() {
         proposal: 1,
         amount: latestStake.current,
         basis: "stake",
-        contract_type: "DIGITEVEN",
+        contract_type: selectedTradeType.value,
         currency: "USD",
         duration: 1,
         duration_unit: "t",
@@ -50,14 +87,16 @@ export default function BuySellComponent() {
       });
 
       const simulateTrading = async () => {
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 2000));
 
         const profitTableRes = await api.profitTable({
           profit_table: 1,
           description: 1,
-          contract_type: ["DIGITEVEN"],
+          contract_type: [`${selectedTradeType.value}`],
           limit: 1,
         });
+
+        console.log(profitTableRes);
 
         const roundedProfitMade =
           profitTableRes.profit_table.transactions[0].sell_price -
@@ -100,7 +139,7 @@ export default function BuySellComponent() {
         setProfit(latestProfit.current);
       };
 
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // await new Promise((resolve) => setTimeout(resolve, 2000));
 
       await simulateTrading();
     } catch (error) {
@@ -127,7 +166,10 @@ export default function BuySellComponent() {
   return (
     <div className="w-2/6">
       <div className="flex flex-col">
-        <h2 className="text-right mb-4">Balance: {balance}</h2>
+        <div className="flex justify-between">
+          <h2 className="text-left mb-4 ml-4">{loginId}</h2>
+          <h2 className="text-right mb-4">Bal: {balance}</h2>
+        </div>
         <button
           onClick={makeAPurchase}
           className="mb-4 ml-4 bg-lime-300 text-emerald-950"
@@ -140,12 +182,13 @@ export default function BuySellComponent() {
         >
           Make multiple purchases.
         </button>
-        <button
-          onClick={setBalanceFunction}
-          className="mb-4 ml-4 bg-lime-300 text-emerald-950"
-        >
-          Get Balance
-        </button>
+
+        <Select
+          className="mb-4 ml-4 bg-lime-300 text-emerald-950 rounded-sm"
+          options={tradeType}
+          value={selectedTradeType}
+          onChange={handleTradeTypeChange}
+        />
 
         <div className="mt-4">
           <p className="text-xl ml-4  font-bold text-indigo-600">
@@ -158,16 +201,19 @@ export default function BuySellComponent() {
       </div>
       <ToastContainer
         position="top-right"
-        autoClose={5000}
+        autoClose={2000}
         hideProgressBar={false}
-        newestOnTop={false}
+        newestOnTop={true}
         closeOnClick
         rtl={false}
-        pauseOnFocusLoss
+        pauseOnFocusLoss={false}
         draggable
-        pauseOnHover
-        theme="light"
+        pauseOnHover={false}
+        theme="dark"
+        // limit={1}
       />
     </div>
   );
 }
+
+export default React.memo(BuySellComponent);
