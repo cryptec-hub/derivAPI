@@ -38,4 +38,21 @@ const disadvantages = [
   "Complexity for Novice Traders: Constant volatility indices may be more challenging for novice traders to navigate due to their inherent risk and fast-paced movements.",
 ];
 
-export { tradeType, allVolatitilityOptions, ticks, advantages, disadvantages };
+const reasons = [
+  "10% Volatility: This level of volatility is relatively low, indicating that the simulated market experiences relatively stable price movements. Traders looking for lower risk exposure may find 10% volatility indices more suitable for their risk appetite.",
+  "25% Volatility: A volatility level of 25% suggests moderately higher price fluctuations than 10% volatility indices. Traders seeking a balance between risk and potential returns may find this option appealing.",
+  "50% Volatility: With 50% volatility, the simulated market experiences more significant price swings, indicating a higher level of risk. Traders with a higher risk tolerance may be interested in exploring the potential opportunities in these indices.",
+  "75% Volatility: At 75% volatility, the simulated market becomes even more volatile, presenting traders with more substantial price movements and potentially higher returns. However, it also involves higher risk.",
+  "100% Volatility: This is the most common and standard volatility level. Continuous indices with 100% volatility closely resemble the behavior of real-world financial markets, making them an attractive option for a wide range of traders.",
+  "150% Volatility: At 150% volatility, the simulated market experiences extreme price fluctuations, offering significant profit potential but also carrying considerable risk. Traders need to exercise caution and implement robust risk management strategies.",
+  "250% Volatility: Continuous indices with 250% volatility exhibit extremely high price swings, which can result in substantial gains or losses in a short period. These indices are considered highly speculative and suitable only for experienced traders willing to take on considerable risk.",
+];
+
+export {
+  tradeType,
+  allVolatitilityOptions,
+  ticks,
+  advantages,
+  disadvantages,
+  reasons,
+};

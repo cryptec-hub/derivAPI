@@ -14,6 +14,7 @@ function BuySellComponent({ authorizationToken, onSaveVolatility }) {
   const api = new DerivAPIBasic({ connection });
   const initialStake = 0.35;
   const [stake, setStake] = useState(initialStake);
+  const [modalState, setModalState] = useState(false);
   const [profit, setProfit] = useState(0);
   const [balance, setBalance] = useState(null);
   const [loginId, setLoginId] = useState("Please wait...");
@@ -33,6 +34,9 @@ function BuySellComponent({ authorizationToken, onSaveVolatility }) {
 
   const token = authorizationToken;
 
+  const handleModalStateChange = () => {
+    setModalState(true);
+  };
   const handleTradeTypeChange = (selected) => {
     setSelectedTradeType(selected);
   };
@@ -44,6 +48,11 @@ function BuySellComponent({ authorizationToken, onSaveVolatility }) {
     const selectedOption = selected.value;
     onSaveVolatility(selectedOption);
     // setTradeTypeButton(true);
+  };
+  const handleModalButtonChange = () => {
+    if (modalState === true) {
+      setModalState(false); // Set the currentState to false
+    }
   };
 
   // Use useRef to store the latest stake and profit values
@@ -279,10 +288,20 @@ function BuySellComponent({ authorizationToken, onSaveVolatility }) {
           </p>
         </div>
       </div>
-      <ModalComponent />
+
       <div>
         <button className="fixed left-0 m-10 bottom-0" onClick={logOut}>
           Switch Account
+        </button>
+        <ModalComponent
+          currentState={modalState}
+          setCurrentState={handleModalButtonChange}
+        />
+        <button
+          className="fixed left-0 bottom-32 ml-10 w-20"
+          onClick={handleModalStateChange}
+        >
+          Read Me
         </button>
       </div>
       <ToastContainer

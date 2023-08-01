@@ -1,17 +1,25 @@
 import React, { useState } from "react";
 import Modal from "react-modal";
-import { advantages, disadvantages } from "./functions/data";
+import { advantages, disadvantages, reasons } from "./functions/data";
 
-function ModalComponent() {
-  const [modalState, setModalState] = useState(true);
+function ModalComponent({ currentState, setCurrentState }) {
+  const customStyles = {
+    content: {
+      backgroundcolor: "blue",
+    },
+  };
   const handleButtonChange = () => {
-    if (modalState == true) {
-      setModalState(false);
+    if (currentState === true) {
+      setCurrentState(false); // Set the currentState to false
     }
   };
   return (
     <div>
-      <Modal isOpen={modalState} appElement={document.getElementById("root")}>
+      <Modal
+        isOpen={currentState}
+        appElement={document.getElementById("root")}
+        style={customStyles}
+      >
         <h1 className="text-black ml-20 mr-20 mt-20 text-3xl font-serif font-bold">
           Trading Continuous Indices on Deriv: Embrace the Opportunity Amid
           Constant Volatility
@@ -52,6 +60,49 @@ function ModalComponent() {
           ))}
         </ul>
         <h1 className="text-black ml-20 mb-6 mt-6 text-3xl font-serif font-bold">
+          Why deriv?
+        </h1>
+        <p className="text-black ml-20 mt-5 mb-10 mr-28 text-lg font-serif">
+          Continuous indices on Deriv are simulated markets that mirror the
+          behavior of real-world financial indices but with predefined constant
+          volatilities. These simulated markets have fixed levels of volatility,
+          which means the rate at which prices fluctuate remains constant at
+          specific percentages. Deriv offers continuous indices with
+          volatilities of 10%, 25%, 50%, 75%, 100%, 150%, and 250%. Volatility,
+          in the context of financial markets, refers to the degree of variation
+          or dispersion in the price of an asset over time. It is a crucial
+          metric that indicates the level of risk associated with an asset or
+          market. Generally, higher volatility implies greater price
+          fluctuations, leading to increased risk and potential for higher
+          returns. The continuous indices offered by Deriv are unique because
+          they are not directly tied to real-world market fluctuations. Instead,
+          they are synthetic, meaning their prices are derived from mathematical
+          models based on real market data and predefined levels of volatility.
+          As a result, these continuous indices are available for trading 24/7,
+          even during weekends and holidays, making them ideal for traders
+          seeking continuous market exposure and opportunities. Let's explore
+          the different constant volatilities available for these continuous
+          indices:
+        </p>
+        <ul className="text-black ml-20 mr-20 font-serif">
+          {reasons.map((advantage, index) => (
+            <li key={index}>
+              {index + 1}. {advantage}
+            </li>
+          ))}
+        </ul>
+        <p className="text-black ml-20 mt-5 mb-10 mr-28 text-lg font-serif">
+          {" "}
+          In summary, continuous indices on Deriv with constant volatilities
+          provide traders with an opportunity to engage in simulated markets
+          that offer continuous trading opportunities. Traders can choose from
+          various levels of volatility based on their risk appetite and
+          investment objectives. However, it is essential to remember that
+          higher volatility comes with increased risk, and traders should always
+          practice prudent risk management and trade responsibly.
+        </p>
+
+        <h1 className="text-black ml-20 mb-6 mt-6 text-3xl font-serif font-bold">
           Conclusion: Embrace the Thrill of Taking Calculated Risks
         </h1>
         <p className="text-black ml-20 mt-5 mb-10 mr-28 text-lg font-serif">
@@ -71,8 +122,7 @@ function ModalComponent() {
           calculated risks, and may your trading adventures be both profitable
           and enriching. Happy trading!
         </p>
-
-        <button onClick={handleButtonChange}>Close Modal</button>
+        <button onClick={handleButtonChange}>Close</button>
       </Modal>
     </div>
   );
