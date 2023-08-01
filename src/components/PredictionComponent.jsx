@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from "react";
-import * as tf from "@tensorflow/tfjs";
+import { useEffect, useState } from "react";
 import DerivAPIBasic from "@deriv/deriv-api/dist/DerivAPIBasic";
 import { trainModel } from "./functions/machineAlgo";
 import {
@@ -12,6 +11,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
+import { ToastContainer, toast } from "react-toastify";
 
 const app_id = 36942;
 const connection = new WebSocket(
@@ -19,14 +19,17 @@ const connection = new WebSocket(
 );
 const api = new DerivAPIBasic({ connection });
 
-const PredictionComponent = () => {
+const PredictionComponent = ({ volatilityOption }) => {
   const [recievedData, setRecievedData] = useState([
     { category: "Even", count: 0 },
     { category: "Odd", count: 0 },
   ]);
+  const [predictionButton, setPredictionButton] = useState(false);
+
   const fetchDataAndTrainModel = async () => {
+    setPredictionButton(true);
     const ticksHistoryResponse = await api.ticksHistory({
-      ticks_history: "R_100",
+      ticks_history: `${volatilityOption}`,
       adjust_start_time: 1,
       count: 100,
       end: "latest",
@@ -57,11 +60,23 @@ const PredictionComponent = () => {
       { category: "Even", count: updatedData["Even"] },
       { category: "Odd", count: updatedData["Odd"] },
     ]);
+
+    toast.success(`Successfully trained the model😊`, {
+      position: "top-right",
+      autoClose: 1000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "colored",
+    });
+    setPredictionButton(false);
   };
 
   useEffect(() => {
     fetchDataAndTrainModel();
-  }, []);
+  }, [volatilityOption]);
 
   // setInterval(fetchDataAndTrainModel, 10000);
 
@@ -80,10 +95,28 @@ const PredictionComponent = () => {
         </ResponsiveContainer>
       </div>
       <div className="text-center">
-        <button className="mt-3 w-40" onClick={fetchDataAndTrainModel}>
+        <button
+          className="mt-3 w-40"
+          onClick={fetchDataAndTrainModel}
+          disabled={predictionButton}
+        >
           Retrain Model
         </button>
       </div>
+
+      <ToastContainer
+        position="top-right"
+        autoClose={2000}
+        hideProgressBar={false}
+        newestOnTop={true}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss={false}
+        draggable
+        pauseOnHover={false}
+        theme="dark"
+        // limit={1}
+      />
     </div>
   );
 };

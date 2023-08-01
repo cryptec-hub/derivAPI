@@ -3,9 +3,10 @@ import DerivAPIBasic from "@deriv/deriv-api/dist/DerivAPIBasic";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Select from "react-select";
-import { tradeType } from "./functions/data";
+import { tradeType, allVolatitilityOptions, ticks } from "./functions/data";
+import ModalComponent from "./ModalComponent";
 
-function BuySellComponent({ authorizationToken }) {
+function BuySellComponent({ authorizationToken, onSaveVolatility }) {
   const app_id = 36942;
   const connection = new WebSocket(
     `wss://ws.binaryws.com/websockets/v3?app_id=${app_id}`
@@ -20,10 +21,29 @@ function BuySellComponent({ authorizationToken }) {
     value: "DIGITEVEN",
     label: "DIGITEVEN",
   });
+  const [tradingButton, setTradingButton] = useState(false);
+  const [selectedVolatitilityOption, setSelectedVolatitilityOption] = useState({
+    value: "1HZ100V",
+    label: "R_100(1s)",
+  });
+  const [selectedTicks, setSelectedTicks] = useState({
+    value: 2,
+    label: 2,
+  });
+
   const token = authorizationToken;
 
   const handleTradeTypeChange = (selected) => {
     setSelectedTradeType(selected);
+  };
+  const handleTickChange = (selected) => {
+    setSelectedTicks(selected);
+  };
+  const handleVolatilityTypeChange = (selected) => {
+    setSelectedVolatitilityOption(selected);
+    const selectedOption = selected.value;
+    onSaveVolatility(selectedOption);
+    // setTradeTypeButton(true);
   };
 
   // Use useRef to store the latest stake and profit values
@@ -39,7 +59,7 @@ function BuySellComponent({ authorizationToken }) {
         setLoginId(accDetails.authorize.loginid);
         toast.success(`Logged in Successfully😊`, {
           position: "top-right",
-          autoClose: 5000,
+          autoClose: 1000,
           hideProgressBar: false,
           closeOnClick: true,
           pauseOnHover: true,
@@ -51,7 +71,7 @@ function BuySellComponent({ authorizationToken }) {
       } catch (error) {
         toast.error(`${error.error.message}`, {
           position: "top-right",
-          autoClose: 5000,
+          autoClose: 2000,
           hideProgressBar: false,
           closeOnClick: true,
           pauseOnHover: true,
@@ -66,7 +86,12 @@ function BuySellComponent({ authorizationToken }) {
     getAccDetails();
   }, []);
 
+  useEffect(() => {
+    setBalanceFunction();
+  });
+
   const makeAPurchase = async () => {
+    setTradingButton(true);
     try {
       await api.authorize(token);
 
@@ -76,9 +101,9 @@ function BuySellComponent({ authorizationToken }) {
         basis: "stake",
         contract_type: selectedTradeType.value,
         currency: "USD",
-        duration: 1,
+        duration: selectedTicks.value,
         duration_unit: "t",
-        symbol: "R_100",
+        symbol: `${selectedVolatitilityOption.value}`,
       });
 
       const buyResponse = await api.buy({
@@ -86,6 +111,16 @@ function BuySellComponent({ authorizationToken }) {
         buy: proposalRequestResponse.proposal.id,
       });
 
+      toast.info(`${buyResponse.buy.longcode}`, {
+        position: "top-center",
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });
       const simulateTrading = async () => {
         await new Promise((resolve) => setTimeout(resolve, 2000));
 
@@ -95,8 +130,6 @@ function BuySellComponent({ authorizationToken }) {
           contract_type: [`${selectedTradeType.value}`],
           limit: 1,
         });
-
-        console.log(profitTableRes);
 
         const roundedProfitMade =
           profitTableRes.profit_table.transactions[0].sell_price -
@@ -108,7 +141,7 @@ function BuySellComponent({ authorizationToken }) {
           // Show toast message with doubled stake
           toast.success(`Profit Made ${profitMade}`, {
             position: "top-right",
-            autoClose: 5000,
+            autoClose: 2500,
             hideProgressBar: false,
             closeOnClick: true,
             pauseOnHover: true,
@@ -119,7 +152,7 @@ function BuySellComponent({ authorizationToken }) {
         } else {
           toast.error(`Loss Made ${profitMade}`, {
             position: "top-right",
-            autoClose: 5000,
+            autoClose: 2500,
             hideProgressBar: false,
             closeOnClick: true,
             pauseOnHover: true,
@@ -128,11 +161,14 @@ function BuySellComponent({ authorizationToken }) {
             theme: "colored",
           });
         }
-        const newStake = profitMade <= 0 ? stake * 2 : initialStake;
+        const newStake = profitMade <= 0 ? stake * 2.1 : initialStake;
 
         // Update the latest stake and profit values with the new values
-        latestStake.current = newStake;
-        latestProfit.current = latestProfit.current + profitMade;
+        latestStake.current = newStake.toFixed(2);
+
+        const newProfit =
+          parseFloat(latestProfit.current) + parseFloat(profitMade);
+        latestProfit.current = newProfit.toFixed(2);
 
         // Update the state with the new stake and profit
         setStake(latestStake.current);
@@ -142,26 +178,52 @@ function BuySellComponent({ authorizationToken }) {
       // await new Promise((resolve) => setTimeout(resolve, 2000));
 
       await simulateTrading();
+      setTradingButton(false);
     } catch (error) {
       console.log("Error:", error);
     }
   };
   const makeMultiplePurchases = () => {
-    setBalanceFunction();
     setInterval(() => {
       makeAPurchase();
     }, 5000);
   };
 
-  const balanceResponse = (res) => {
-    const data = JSON.parse(res.data);
-    setBalance(data.balance.balance);
+  const balanceResponse = async (res) => {
+    const data = await JSON.parse(res.data);
+    return data.balance; // Resolve the Promise with the balance value
   };
 
   async function setBalanceFunction() {
+    // Create a Promise to wait for the balance value
+    const balancePromise = new Promise((resolve) => {
+      connection.addEventListener("message", async (res) => {
+        const balance = await balanceResponse(res);
+        if (balance !== undefined) {
+          resolve(balance);
+        }
+      });
+    });
+
+    // Authorize and subscribe to balance
     await api.authorize(token);
-    connection.addEventListener("message", balanceResponse);
+    await api.balance({
+      balance: 1,
+      subscribe: 1,
+    });
+
+    // Wait for the balance value to be available
+    const balanceValue = await balancePromise;
+    setBalance(balanceValue.balance);
   }
+
+  const logOut = () => {
+    // Delete the authToken from localStorage
+    localStorage.removeItem("authToken");
+
+    // Reload the page
+    window.location.reload();
+  };
 
   return (
     <div className="w-2/6">
@@ -173,6 +235,7 @@ function BuySellComponent({ authorizationToken }) {
         <button
           onClick={makeAPurchase}
           className="mb-4 ml-4 bg-lime-300 text-emerald-950"
+          disabled={tradingButton}
         >
           Make a Single Purchase.
         </button>
@@ -190,6 +253,23 @@ function BuySellComponent({ authorizationToken }) {
           onChange={handleTradeTypeChange}
         />
 
+        <Select
+          className="mb-4 ml-4 bg-lime-300 text-emerald-950 rounded-sm"
+          options={allVolatitilityOptions}
+          value={selectedVolatitilityOption}
+          onChange={handleVolatilityTypeChange}
+        />
+
+        <div className="flex items-center justify-end">
+          <h3 className="mb-4 ml-4">Ticks: </h3>
+          <Select
+            className="mb-4 ml-4 bg-lime-300 text-emerald-950 rounded-sm"
+            options={ticks}
+            value={selectedTicks}
+            onChange={handleTickChange}
+          />
+        </div>
+
         <div className="mt-4">
           <p className="text-xl ml-4  font-bold text-indigo-600">
             Stake: {stake}
@@ -198,6 +278,12 @@ function BuySellComponent({ authorizationToken }) {
             Profit: {profit}
           </p>
         </div>
+      </div>
+      <ModalComponent />
+      <div>
+        <button className="fixed left-0 m-10 bottom-0" onClick={logOut}>
+          Switch Account
+        </button>
       </div>
       <ToastContainer
         position="top-right"

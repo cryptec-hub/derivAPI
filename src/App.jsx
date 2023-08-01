@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import "./App.css";
 import MainComponent from "./components/MainComponent";
 import DialogDemo from "./components/DialogComponent/Dialog";
+import "../src/index.css";
 
 function App() {
   const [authorizationToken, setAuthorizationToken] = useState(""); // State to hold the authToken
@@ -22,7 +23,9 @@ function App() {
     <>
       {authorizationToken ? (
         // If the authToken is set, render the MainComponent
-        <MainComponent authorizationToken={authorizationToken} />
+        <div>
+          <MainComponent authorizationToken={authorizationToken} />
+        </div>
       ) : (
         // If the authToken is not set, render the DialogDemo
         <DialogDemo onSaveToken={handleAuthToken} />

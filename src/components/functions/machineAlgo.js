@@ -3,28 +3,27 @@ import * as tf from "@tensorflow/tfjs";
 export const trainModel = async (data) => {
   // Define the architecture of the autoencoder
   const inputDim = 1; // Dimensionality of the input data
-  const encodingDim = 128; // Dimensionality of the encoded representation
-  const windowSize = 20; // Size of the moving average window
+  const encodingDim = 32; // Dimensionality of the encoded representation
+  const windowSize = 10; // Size of the moving average window
 
   const model = tf.sequential();
 
   // Encoder layers
   model.add(
     tf.layers.dense({
-      units: 64,
+      units: encodingDim,
       activation: "relu",
       inputShape: [inputDim],
     })
   );
-  model.add(tf.layers.dense({ units: 32, activation: "relu" }));
-  model.add(tf.layers.dense({ units: 16, activation: "relu" }));
-  model.add(tf.layers.dense({ units: encodingDim, activation: "relu" }));
 
   // Decoder layers
-  model.add(tf.layers.dense({ units: 16, activation: "relu" }));
-  model.add(tf.layers.dense({ units: 32, activation: "relu" }));
-  model.add(tf.layers.dense({ units: 64, activation: "relu" }));
-  model.add(tf.layers.dense({ units: inputDim, activation: "linear" }));
+  model.add(
+    tf.layers.dense({
+      units: inputDim,
+      activation: "linear",
+    })
+  );
 
   // Compile the model
   model.compile({ loss: "meanSquaredError", optimizer: "adam" });
@@ -98,8 +97,8 @@ export const trainModel = async (data) => {
 
   await trainAutoencoder(data, epochs);
 
-  const inputForPredictions = data.slice(-windowSize); // Use the last 20 values of input data for predictions
-  const predictions = predictNextValues(inputForPredictions, 50);
+  const inputForPredictions = data.slice(-windowSize); // Use the last 10 values of input data for predictions
+  const predictions = predictNextValues(inputForPredictions, 45);
 
   return predictions;
 };
