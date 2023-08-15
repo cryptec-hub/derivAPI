@@ -100,8 +100,10 @@ function processNumber(number) {
     const updatedData = [...prevData];
     if (isEven) {
       updatedData[0].count += 1; // Increment count for Even category by 1
+      console.log('Incremented Even By 1');
     } else {
       updatedData[1].count += 1; // Increment count for Odd category by 1
+      console.log('Incremented Odd By 1');
     }
     return updatedData;
   });

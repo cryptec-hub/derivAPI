@@ -5,6 +5,8 @@ import "react-toastify/dist/ReactToastify.css";
 import Select from "react-select";
 import { tradeType, allVolatitilityOptions, ticks } from "./functions/data";
 import ModalComponent from "./ModalComponent";
+import './Components.css';
+
 
 function BuySellComponent({ authorizationToken, onSaveVolatility }) {
   const app_id = 36942;
