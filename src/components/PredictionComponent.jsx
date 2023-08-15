@@ -31,7 +31,7 @@ const PredictionComponent = ({ volatilityOption }) => {
     const ticksHistoryResponse = await api.ticksHistory({
       ticks_history: `${volatilityOption}`,
       adjust_start_time: 1,
-      count: 100,
+      count: 150,
       end: "latest",
       start: 1,
       style: "ticks",

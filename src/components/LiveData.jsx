@@ -93,18 +93,20 @@ function LiveData({ volatilityOption }) {
             : sampleNumber.toString().slice(-1);
 
         // Update the data array based on incoming data
-        function processNumber(number) {
-          const isEven = number % 2 === 0;
-          setRecievedData((prevData) => {
-            const updatedData = [...prevData];
-            if (isEven) {
-              updatedData[0].count += 1; // Increment count for Even category
-            } else {
-              updatedData[1].count += 1; // Increment count for Odd category
-            }
-            return updatedData;
-          });
-        }
+      // Update the data array based on incoming data
+function processNumber(number) {
+  const isEven = number % 2 === 0;
+  setRecievedData((prevData) => {
+    const updatedData = [...prevData];
+    if (isEven) {
+      updatedData[0].count += 1; // Increment count for Even category by 1
+    } else {
+      updatedData[1].count += 1; // Increment count for Odd category by 1
+    }
+    return updatedData;
+  });
+}
+
 
         processNumber(lastDigit);
       } else {

@@ -103,8 +103,33 @@ function ModalComponent({ currentState, setCurrentState }) {
         </p>
 
         <h1 className="text-black ml-20 mb-6 mt-6 text-3xl font-serif font-bold">
+          Why this app:
+        </h1>
+        <p className="text-black ml-20 mt-5 mb-10 mr-28 text-lg font-serif">
+         The algo predictions are quite a valid reason. But there's more. You get to decide when a purchase should
+         be made. If you are good with statistics, you know the probability of something happening eventually increases 
+         with time. Initially, it's 50/50 but as time goes by, it increases. 
+
+         If you are good with programming, precisely with react, you can get the code from 
+         the developer and set your strategies from within there. Or better yet, get me do it for 
+         you.
+        </p>
+
+        <p className="text-black text-xl  ml-20 mt-5 mb-10 mr-28 font-serif"><em>Please unsubscribe before changing the volatility.</em></p>
+
+        <h1 className="text-black ml-20 mb-6 mt-6 text-3xl font-serif font-bold">
+          The DownSide:
+        </h1>
+        <p className="text-black ml-20 mt-5 mb-10 mr-28 text-lg font-serif">
+         Machine algos aren't always successfull and atimes, the markets tend to shift. If you login
+         during a market shift, the predictions might seem false. Please make sure to first confirm that
+         your chances of success are high.
+        </p>
+
+        <h1 className="text-black ml-20 mb-6 mt-6 text-3xl font-serif font-bold">
           Conclusion: Embrace the Thrill of Taking Calculated Risks
         </h1>
+        
         <p className="text-black ml-20 mt-5 mb-10 mr-28 text-lg font-serif">
           Trading continuous indices on Deriv offers a dynamic and rewarding
           experience for traders of all levels. With a wide range of constant

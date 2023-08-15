@@ -1,14 +1,13 @@
 import * as tf from "@tensorflow/tfjs";
 
 export const trainModel = async (data) => {
-  // Define the architecture of the autoencoder
-  const inputDim = 1; // Dimensionality of the input data
-  const encodingDim = 32; // Dimensionality of the encoded representation
-  const windowSize = 10; // Size of the moving average window
+  const inputDim = 1;
+  const encodingDim = 32;
+  const windowSize = 10;
 
   const model = tf.sequential();
 
-  // Encoder layers
+  // Encoder layers for capturing patterns
   model.add(
     tf.layers.dense({
       units: encodingDim,
@@ -17,7 +16,7 @@ export const trainModel = async (data) => {
     })
   );
 
-  // Decoder layers
+  // Decoder layers for reconstruction
   model.add(
     tf.layers.dense({
       units: inputDim,
@@ -25,24 +24,24 @@ export const trainModel = async (data) => {
     })
   );
 
-  // Compile the model
+  // Compile the model for forecasting
   model.compile({ loss: "meanSquaredError", optimizer: "adam" });
 
-  // Train the autoencoder
+  // Train the autoencoder for pattern recognition
   const trainAutoencoder = async (data, epochs) => {
     const tensorData = tf.tensor2d(data, [data.length, inputDim]);
     await model.fit(tensorData, tensorData, { epochs });
   };
 
-  // Generate predictions for the next 10 values
-  const predictNextValues = (inputData, numPredictions) => {
-    let predictions = [];
+  // Generate forecasts using captured patterns
+  const forecastNextValues = (inputData, numForecasts) => {
+    const forecasts = [];
 
     // Apply moving average to the input data
     const applyMovingAverage = (data) => {
       const smoothedData = [];
       const dataLength = data.length;
-      const weights = [0.1, 0.2, 0.3, 0.2, 0.1]; // Custom weights for the moving average
+      const weights = [0.1, 0.2, 0.3, 0.2, 0.1];
 
       for (let i = 0; i < dataLength; i++) {
         let sum = 0;
@@ -61,44 +60,40 @@ export const trainModel = async (data) => {
       return smoothedData;
     };
 
-    // Convert inputData and smoothedInputData to tensors with shape [inputData.length, 1]
-    let tensorInputData = tf.tensor2d(inputData, [inputData.length, 1]);
+    let tensorInputData = tf.tensor2d(inputData, [inputData.length, inputDim]);
     let tensorSmoothedData = tf.tensor2d(applyMovingAverage(inputData), [
       inputData.length,
-      1,
+      inputDim,
     ]);
 
-    for (let i = 0; i < numPredictions; i++) {
+    for (let i = 0; i < numForecasts; i++) {
       const encodedData = model.predict(tensorInputData);
       const decodedData = model.predict(encodedData);
 
-      // Get the decoded values from the tensor
       const decodedValues = decodedData.arraySync().flat();
-      const prediction = decodedValues[0].toFixed(2);
+      const forecast = decodedValues[0].toFixed(2);
 
-      predictions.push(prediction);
+      forecasts.push(forecast);
 
-      // Update inputData and smoothedInputData with the new prediction
-      inputData = inputData.concat(Number(prediction)).slice(-windowSize);
-      tensorInputData = tf.tensor2d(inputData, [inputData.length, 1]);
+      inputData = inputData.concat(Number(forecast)).slice(-windowSize);
+      tensorInputData = tf.tensor2d(inputData, [inputData.length, inputDim]);
 
-      const newSmoothedValue = Number(prediction);
+      const newSmoothedValue = Number(forecast);
       tensorSmoothedData = tf.concat([
         tensorSmoothedData.slice(1),
-        tf.tensor2d([[newSmoothedValue]], [1, 1]),
+        tf.tensor2d([[newSmoothedValue]], [1, inputDim]),
       ]);
     }
 
-    return predictions;
+    return forecasts;
   };
 
-  // Example usage
-  const epochs = 200; // Number of training epochs
+  const epochs = 200;
 
   await trainAutoencoder(data, epochs);
 
-  const inputForPredictions = data.slice(-windowSize); // Use the last 10 values of input data for predictions
-  const predictions = predictNextValues(inputForPredictions, 45);
+  const inputForForecasts = data.slice(-windowSize);
+  const forecasts = forecastNextValues(inputForForecasts, 45);
 
-  return predictions;
+  return forecasts;
 };
